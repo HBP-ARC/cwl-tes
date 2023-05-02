@@ -34,3 +34,4 @@ s3-conformance: export CWL_TES_REMOTE_STORAGE = http://localhost:9000/cwl-tes-bu
 
 s3-conformance:
 	@./tests/run_conformance.sh
+
