@@ -189,7 +189,7 @@ class S3FsAccess(StdFsAccess):
         if not relpath.endswith('/'):
             relpath += '/'
 
-        self._client.put_object(bucket, relpath, io.BytesIO(), 0)
+        self._client.put_object(bucket, relpath, io.BytesIO(), 0, metadata={'x-amz-acl': 'public-read'})
 
     def listdir(self, fn):  # type: (str) -> List[str]
         """ List all objects in a given bucket (non-recursively).
@@ -239,7 +239,7 @@ class S3FsAccess(StdFsAccess):
         bucket, relpath = _parse_bucket_url(fn)
 
         nbytes = os.fstat(handle.fileno()).st_size
-        self._client.put_object(bucket, relpath, handle, nbytes)
+        self._client.put_object(bucket, relpath, handle, nbytes, metadata={'x-amz-acl': 'public-read'})
 
 
 def _parse_bucket_url(url):
