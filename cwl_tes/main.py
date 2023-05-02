@@ -214,6 +214,10 @@ def main(args=None):
     runtime_context.make_fs_access = make_fs_access
     runtime_context.path_mapper = functools.partial(
         TESPathMapper, fs_access=fs_access)
+    if parsed_args.workflow_id:
+        runtime_context.str_uuid = parsed_args.workflow_id
+    else:
+        runtime_context.str_uuid = str(uuid.uuid4())
     job_executor = MultithreadedJobExecutor() if parsed_args.parallel \
         else SingleJobExecutor()
     job_executor.max_ram = job_executor.max_cores = float("inf")
@@ -454,6 +458,7 @@ def arg_parser():  # type: () -> argparse.ArgumentParser
     parser.add_argument("--insecure", action="store_true",
                         help=("Connect securely to FTP server (ignored when "
                               "--remote-storage-url is not set)"))
+    parser.add_argument("--workflow-id", type=str)
     parser.add_argument("--token", type=str)
     parser.add_argument("--token-public-key", type=str,
                         default=DEFAULT_TOKEN_PUBLIC_KEY)

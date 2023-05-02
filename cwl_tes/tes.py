@@ -173,6 +173,7 @@ class TESTask(JobBase):
         self.poll_interval = 1
         self.poll_retries = 10
         self.client = tes.HTTPClient(url, token=token)
+        self.uuid = runtime_context.str_uuid
         self.remote_storage_url = remote_storage_url
         self.token = token
 
@@ -361,7 +362,9 @@ class TESTask(JobBase):
                 ram_gb=ram,
                 disk_gb=disk
             ),
-            tags={"CWLDocumentId": self.spec.get("id")}
+            tags={"CWLDocumentId": self.spec.get("id"),
+                  "tool_name": self.name,
+                  "workflow_id": self.uuid}
         )
 
         return create_body
