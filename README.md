@@ -35,6 +35,8 @@ How to run a CWL workflow on the EBRAINS experimental TES server:
 
         # and install cwl-tes:
         cd cwl-tes/
+        # to ensure that latest version of py-tes is installed:
+        pip uninstall py-tes
         pip install .
 
 
