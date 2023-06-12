@@ -1,11 +1,8 @@
-[![Build Status](https://travis-ci.org/ohsu-comp-bio/cwl-tes.svg?branch=master)](https://travis-ci.org/ohsu-comp-bio/cwl-tes)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
 # GA4GH CWL Task Execution
 
 ___cwl-tes___ submits your tasks to a TES server. Task submission is parallelized when possible.
-
-[Funnel](https://ohsu-comp-bio.github.io/funnel) is an implementation of the [GA4GH task execution API](https://github.com/ga4gh/task-execution-schemas). It runs your dockerized tasks on slurm, htcondor, google compute engine, aws batch, etc.
 
 
 ## Requirements
@@ -14,39 +11,52 @@ ___cwl-tes___ submits your tasks to a TES server. Task submission is parallelize
 
 * [Docker](https://docs.docker.com/)
 
-* [Funnel](https://ohsu-comp-bio.github.io/funnel)
 
 ## Quickstart
 
-* Start the task server
+How to run a CWL workflow on the EBRAINS experimental TES server:
 
-```
-funnel server run
-```
+1. Clone this repo:
 
-* Run your CWL tool/workflow
-
-```
-cwl-tes --tes http://localhost:8000 tests/hashsplitter-workflow.cwl.yml --input tests/resources/test.txt
-```
-
-## Install
-
-I strongly recommend using a [virtualenv](https://virtualenv.pypa.io/en/stable/#) for installation since _cwl-tes_
-depends on a specific version of _cwltool_.
-
-Install from pip:
-
-```
-pip install cwl-tes
-```
+        git clone git@gitlab.ebrains.eu:technical-coordination/private/workflows/cwl-tes.git
 
 
-Install from source:
+2. Install this version of the cwl-tes package:
 
-```
-python setup.py install
-```
+        # create a virtualenv:
+        python3 -m virtualenv cwl-env
+        source cwl-env/bin/activate
+        
+        # or venv:
+        python3 -m venv cwl-env
+        source cwl-env/bin/activate
+        pip install --upgrade pip
+        pip install --upgrade wheel
+
+        # and install cwl-tes:
+        cd cwl-tes/
+        pip install .
+
+
+3. Make sure that you have access to the BSC Swift object storage and that your credentials are stored correctly in the `AWS_{ACCESS_KEY_ID,SECRET_ACCESS_KEY}` environment variables:
+
+        export AWS_ACCESS_KEY_ID=EXAMPLE_KEY_ID
+        export AWS_SECRET_ACCESS_KEY=EXAMPLE_ACCESS_KEY
+
+    For info on how to get the access key id and secret access key, see here: https://www.bsc.es/supportkc/docs-ncloud/objectstorage
+
+
+4. Obtain an EBRAINS token (from the Collaboratory):
+
+        export TOKEN=EXAMPLE_TOKEN
+
+5. Find a CWL workflow and run it using cwl-tes:
+
+        cwl-tes --tes <tes-endpoint> --remote-storage-url <object-storage-endpoint>/<container_name> --token $token <workflow>.cwl <workflow_info>.yml
+
+For example:
+
+        cwl-tes --tes https://tes.apps-dev.hbp.eu/ga4gh/tes --remote-storage-url https://swift.bsc.es/tesk-ebrains-storage --token $TOKEN workflow.cwl workflow_info.yml
 
 
 ## Run the v1.0 conformance tests
