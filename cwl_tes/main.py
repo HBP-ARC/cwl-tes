@@ -90,7 +90,7 @@ def fs_upload(base_url, fs_access, cwl_obj):
             log.warning("FTP upload, Directory %s already exists", basename)
         else:
             for root, _subdirs, files in os.walk(path, followlinks=True):
-                root_path = base_url + '/' + root[len(dirname):]
+                root_path = base_url + root[len(dirname):]
                 fs_access.mkdir(root_path)
                 for each_file in files:
                     with open(os.path.join(root,

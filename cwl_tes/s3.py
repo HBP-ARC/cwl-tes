@@ -125,11 +125,8 @@ class S3FsAccess(StdFsAccess):
         bucket, relpath = _parse_bucket_url(fn)
         if not relpath:
             return self._client.bucket_exists(bucket)
-
-        objs = self._client.list_objects(bucket, prefix=relpath)
-        paths = [obj.object_name for obj in objs]
-
-        return relpath in paths or relpath + '/' in paths
+        
+        return self.isfile(fn) or self.isdir(fn)
 
     def size(self, fn):  # type: (str) -> int
         """ Return the size of a bucket resource (in bytes).
@@ -145,25 +142,27 @@ class S3FsAccess(StdFsAccess):
 
     def isfile(self, fn):  # type: (str) -> bool
         """ Check if a bucket resource exists and is a file.
-
-        Note: S3 does not really distinguish between files and directory.
-        Consequently, this function (and `isdir`) merely check that the
-        given object exists.
-
         """
         _logger.debug("isfile() for %s", fn)
 
         if not is_s3(fn):
             return super().isfile(fn)
-
-        return self.exists(fn)
+        
+        bucket, relpath = _parse_bucket_url(fn)
+        try:
+            obj = self._client.get_object(bucket, relpath)
+            return relpath[-1] != '/'
+        except minio.error.S3Error as exc:
+            if exc.code == "NoSuchKey":
+                return False
+            raise
 
     def isdir(self, fn):  # type: (str) -> bool
         """ Check if a bucket resource exists and is a directory.
 
-        Note: S3 does not really distinguish between files and directory.
-        Consequently, this function (and `isfile`) merely check that the
-        given object exists.
+        Note: an S3 directory is simply an object whose name ends in a forward slash.
+        Tho check if the object is a directory, this function lists objects that are
+        under that prefix.
 
         """
         _logger.debug("isdir() for %s", fn)
@@ -171,8 +170,16 @@ class S3FsAccess(StdFsAccess):
         if not is_s3(fn):
             return super().isdir(fn)
 
-        return self.exists(fn)
+        bucket, relpath = _parse_bucket_url(fn)
+        objs = self._client.list_objects(bucket, prefix=relpath)
+        paths = [obj.object_name for obj in objs]
 
+        # If only one object is found, check if it is a file
+        if len(paths) == 1 and paths[0][-1] != '/':
+            return False
+        else:
+            return len(paths) > 0
+        
     def mkdir(self, url, recursive=True):
         """ Make a directory inside the bucket.
 
@@ -198,11 +205,12 @@ class S3FsAccess(StdFsAccess):
 
         bucket, relpath = _parse_bucket_url(fn)
 
-        prefix = relpath or None
+        # Make sure that dir prefix ends with a forward slash
+        prefix = relpath.strip('/')+'/' or None
         objs = self._client.list_objects(bucket, prefix=prefix)
 
         return [
-            _make_bucket_url(obj.bucket_name, obj.object_name) for obj in objs
+            _make_bucket_url(obj.bucket_name, obj.object_name).strip('/') for obj in objs if obj.object_name != prefix
         ]
 
     def join(self, path, *paths):  # type: (str, *str) -> str
@@ -212,6 +220,10 @@ class S3FsAccess(StdFsAccess):
 
         if not is_s3(path):
             return super().join(path, *paths)
+        
+        # If a full s3 path is in *paths, return that instead
+        if is_s3(paths[-1]) and self.exists(paths[-1]):
+            return paths[-1]
 
         return path + '/' + '/'.join(paths)
 
