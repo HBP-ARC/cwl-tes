@@ -47,6 +47,7 @@ setup(
         "py-tes @ git+https://github.com/ohsu-comp-bio/py-tes@a9ac2959fdb38bd31433d358724e20c2c544c6a1#egg=py-tes",
         "PyJWT>=1.6.4",
         "typing_extensions>=3.7.4",
+        "urllib3<2.0.0"
     ],
     extras_require={
         "test": [
