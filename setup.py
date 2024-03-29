@@ -44,7 +44,7 @@ setup(
         "future>=0.16.0",
         "requests>=2.18.2",
         "minio>=4.0.18",
-        "py-tes @ git+https://github.com/ohsu-comp-bio/py-tes@master#egg=py-tes",
+        "py-tes @ git+https://github.com/ohsu-comp-bio/py-tes@a9ac2959fdb38bd31433d358724e20c2c544c6a1#egg=py-tes",
         "PyJWT>=1.6.4",
         "typing_extensions>=3.7.4",
     ],
